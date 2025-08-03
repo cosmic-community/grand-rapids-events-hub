@@ -10,6 +10,17 @@ interface CosmicObject {
   modified_at: string;
 }
 
+// Cosmic metafield interface
+export interface CosmicMetafield {
+  id: string;
+  key: string;
+  type: string;
+  title: string;
+  required: boolean;
+  value: any;
+  helptext?: string;
+}
+
 // Event object type (approved events)
 export interface Event extends CosmicObject {
   type: 'events';
@@ -58,17 +69,17 @@ export interface CosmicResponse<T> {
   skip: number;
 }
 
-// Form data types
+// Form data interface matching the exact form field names
 export interface EventSubmissionFormData {
   title: string;
   description: string;
-  eventDate: string;
-  startTime: string;
-  endTime?: string;
-  venueName: string;
+  event_date: string;
+  start_time: string;
+  end_time?: string;
+  venue_name: string;
   address: string;
-  submitterName: string;
-  submitterEmail: string;
+  submitter_name: string;
+  submitter_email: string;
   website?: string;
   price?: string;
   notes?: string;

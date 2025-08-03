@@ -23,7 +23,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Date validation
+    // Date validation - ensure date is in YYYY-MM-DD format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dateRegex.test(data.event_date)) {
+      return NextResponse.json(
+        { message: 'Invalid date format. Please use YYYY-MM-DD format.' },
+        { status: 400 }
+      )
+    }
+
     const eventDate = new Date(data.event_date)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
