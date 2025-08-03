@@ -5,32 +5,32 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    // Basic validation
-    if (!data.title || !data.description || !data.eventDate || !data.startTime || 
-        !data.venueName || !data.address || !data.submitterName || !data.submitterEmail) {
+    // Basic validation - check for required fields using the correct field names
+    if (!data.title || !data.description || !data.event_date || !data.start_time || 
+        !data.venue_name || !data.address || !data.submitter_name || !data.submitter_email) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { message: 'Missing required fields' },
         { status: 400 }
       )
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(data.submitterEmail)) {
+    if (!emailRegex.test(data.submitter_email)) {
       return NextResponse.json(
-        { error: 'Invalid email address' },
+        { message: 'Invalid email address' },
         { status: 400 }
       )
     }
 
     // Date validation
-    const eventDate = new Date(data.eventDate)
+    const eventDate = new Date(data.event_date)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     
     if (eventDate < today) {
       return NextResponse.json(
-        { error: 'Event date must be in the future' },
+        { message: 'Event date must be in the future' },
         { status: 400 }
       )
     }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error submitting event:', error)
     return NextResponse.json(
-      { error: 'Failed to submit event. Please try again.' },
+      { message: 'Failed to submit event. Please try again.' },
       { status: 500 }
     )
   }

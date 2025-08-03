@@ -22,9 +22,7 @@ export default function SubmitEventPage() {
             </p>
           </div>
 
-          <div className="card">
-            <EventSubmissionForm />
-          </div>
+          <EventSubmissionForm />
         </div>
       </div>
     </main>

@@ -61,9 +61,10 @@ export default function EventSubmissionForm() {
         body: JSON.stringify(formData),
       })
 
+      const responseData = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to submit event')
+        throw new Error(responseData.message || 'Failed to submit event')
       }
 
       setSubmitStatus('success')
