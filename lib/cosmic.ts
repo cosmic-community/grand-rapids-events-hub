@@ -13,6 +13,11 @@ const cosmicWrite = createBucketClient({
   writeKey: process.env.COSMIC_WRITE_KEY as string,
 })
 
+// Type guard to check if error has status property
+function isCosmicError(error: unknown): error is { status: number } {
+  return typeof error === 'object' && error !== null && 'status' in error
+}
+
 // Get all events
 export async function getEvents(limit: number = 10, skip: number = 0) {
   try {
@@ -28,7 +33,7 @@ export async function getEvents(limit: number = 10, skip: number = 0) {
     return objects || []
   } catch (error) {
     // Handle 404 error when no objects are found
-    if (error.status === 404) {
+    if (isCosmicError(error) && error.status === 404) {
       return []
     }
     throw error
@@ -49,7 +54,7 @@ export async function getEvent(slug: string) {
     return object
   } catch (error) {
     // Handle 404 error when object is not found
-    if (error.status === 404) {
+    if (isCosmicError(error) && error.status === 404) {
       return null
     }
     throw error
@@ -113,7 +118,7 @@ export async function getEventSubmissions(limit: number = 10, skip: number = 0) 
     return objects || []
   } catch (error) {
     // Handle 404 error when no objects are found
-    if (error.status === 404) {
+    if (isCosmicError(error) && error.status === 404) {
       return []
     }
     throw error
