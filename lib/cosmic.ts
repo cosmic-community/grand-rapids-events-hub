@@ -27,7 +27,7 @@ export async function getEvents(): Promise<Event[]> {
     return objects as Event[]
   } catch (error) {
     // Handle 404 error when no objects are found
-    if (error.status === 404) {
+    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
       return []
     }
     throw error
@@ -44,7 +44,7 @@ export async function getEvent(slug: string): Promise<Event | null> {
     
     return object as Event
   } catch (error) {
-    if (error.status === 404) {
+    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
       return null
     }
     throw error
@@ -179,7 +179,7 @@ export async function getEventSubmissions(): Promise<EventSubmission[]> {
     return objects as EventSubmission[]
   } catch (error) {
     // Handle 404 error when no objects are found
-    if (error.status === 404) {
+    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
       return []
     }
     throw error
