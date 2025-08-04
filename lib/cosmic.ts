@@ -1,64 +1,53 @@
 import { createBucketClient } from '@cosmicjs/sdk'
-import { Event, EventSubmission, EventSubmissionFormData, CosmicResponse } from '@/types'
+import { Event, EventSubmission, CosmicResponse, EventSubmissionFormData } from '@/types'
 
-// Create read-only client for client-side operations
-const cosmicRead = createBucketClient({
-  bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
-  readKey: process.env.COSMIC_READ_KEY as string,
-  apiEnvironment: 'staging'
+// Read-only client for public data
+const cosmic = createBucketClient({
+  bucketSlug: process.env.COSMIC_BUCKET_SLUG!,
+  readKey: process.env.COSMIC_READ_KEY!,
 })
 
-// Create write client for server-side operations (includes write key)
+// Write client for server-side operations (includes write key)
 const cosmicWrite = createBucketClient({
-  bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
-  readKey: process.env.COSMIC_READ_KEY as string,
-  writeKey: process.env.COSMIC_WRITE_KEY as string,
-  apiEnvironment: 'staging'
+  bucketSlug: process.env.COSMIC_BUCKET_SLUG!,
+  readKey: process.env.COSMIC_READ_KEY!,
+  writeKey: process.env.COSMIC_WRITE_KEY!,
 })
 
-// Fetch all approved events
 export async function getEvents(): Promise<Event[]> {
   try {
-    const { objects } = await cosmicRead.objects
+    const { objects } = await cosmic.objects
       .find({ type: 'events' })
       .props(['id', 'title', 'slug', 'metadata'])
       .depth(1)
     
     return objects as Event[]
   } catch (error) {
-    // Handle 404 error when no objects are found
-    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
-      return []
-    }
-    throw error
+    console.error('Error fetching events:', error)
+    return []
   }
 }
 
-// Fetch a single event by slug
 export async function getEvent(slug: string): Promise<Event | null> {
   try {
-    const { object } = await cosmicRead.objects
+    const { object } = await cosmic.objects
       .findOne({ type: 'events', slug })
       .props(['id', 'title', 'slug', 'metadata'])
       .depth(1)
     
     return object as Event
   } catch (error) {
-    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
-      return null
-    }
-    throw error
+    console.error(`Error fetching event with slug ${slug}:`, error)
+    return null
   }
 }
 
-// Submit an event for review (saves to event-submissions object type)
 export async function submitEvent(formData: EventSubmissionFormData): Promise<{ id: string }> {
   try {
-    // Create the event submission object with proper metafield structure
-    const eventSubmission = {
+    const { object } = await cosmicWrite.objects.insertOne({
       title: formData.title,
       type: 'event-submissions',
-      status: 'draft', // Set as draft for review
+      status: 'published',
       metafields: [
         {
           id: '4e81f2fd-37f9-4a1c-8a22-8e8616bd2257',
@@ -157,31 +146,11 @@ export async function submitEvent(formData: EventSubmissionFormData): Promise<{ 
           value: formData.notes || ''
         }
       ]
-    }
+    })
 
-    const { object } = await cosmicWrite.objects.insertOne(eventSubmission)
-    
     return { id: object.id }
   } catch (error) {
-    console.error('Error creating event submission:', error)
-    throw new Error('Failed to submit event to Cosmic CMS')
-  }
-}
-
-// Fetch event submissions (for admin use)
-export async function getEventSubmissions(): Promise<EventSubmission[]> {
-  try {
-    const { objects } = await cosmicRead.objects
-      .find({ type: 'event-submissions' })
-      .props(['id', 'title', 'slug', 'metadata'])
-      .depth(1)
-    
-    return objects as EventSubmission[]
-  } catch (error) {
-    // Handle 404 error when no objects are found
-    if (error && typeof error === 'object' && 'status' in error && (error as any).status === 404) {
-      return []
-    }
-    throw error
+    console.error('Error submitting event to Cosmic:', error)
+    throw new Error('Failed to submit event to CMS')
   }
 }
